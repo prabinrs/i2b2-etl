@@ -13,44 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM ubuntu:latest
+FROM python:3.11-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV TZ=UTC
-# Update the package list and install dependencies
 
 RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-venv 
-
-RUN python3 -m venv .venv
-RUN . .venv/bin/activate
-
-RUN apt-get update && apt-get install -y \
-    python3-pip \
+    build-essential \
+    libpq-dev \
     curl \
     apt-utils \
     vim \
     postgresql-client \
     unixodbc-dev \
     freetds-dev \
-    pkg-config
-RUN pip install --upgrade --break-system-packages setuptools
-# Create a Python virtual environment and activate it
-RUN python3 -m venv /usr/src/app/.venv 
-WORKDIR /usr/src/app
-RUN . /usr/src/app/.venv/bin/activate
- 
-# Upgrade pip and install required Python packages
-COPY requirements.txt requirements.txt
-RUN /usr/src/app/.venv/bin/pip install --upgrade  pip 
-RUN /usr/src/app/.venv/bin/pip install --upgrade Cython 
-RUN /usr/src/app/.venv/bin/pip install -r requirements.txt 
+    pkg-config \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --upgrade pip && 
-            pip install -U imbalanced-learn mlflow xgboost scikit-learn pandas &&
-            pip uninstall --yes scikit-learn &&
-            pip install scikit-learn==1.3.2 &&
+WORKDIR /usr/src/app
+RUN python3 -m venv .venv
+
+COPY requirements.txt requirements.txt
+RUN .venv/bin/pip install --upgrade pip setuptools Cython && \
+    .venv/bin/pip install -r requirements.txt && \
+    .venv/bin/pip install -U imbalanced-learn mlflow xgboost scikit-learn pandas && \
+    .venv/bin/pip uninstall --yes scikit-learn && \
+    .venv/bin/pip install scikit-learn==1.3.2
+
 COPY . .
-# Default command
+
 CMD ["/bin/bash"]

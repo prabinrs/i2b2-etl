@@ -71,7 +71,7 @@ services:
             - /tmp/etl:/tmp/etl
             - /tmp/jupyter:/root/.local/share/jupyter/runtime
         ports:
-            - 5000:5000
+          - 5001:5000
             #- 8888:8888
         networks:
             - i2b2-net
