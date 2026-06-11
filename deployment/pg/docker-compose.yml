@@ -1,4 +1,4 @@
-services:
+etservices:
 
   i2b2c-web:
     image: i2b2/i2b2c-web:${I2B2_WEB_TAG} 
@@ -71,7 +71,7 @@ services:
             - /tmp/etl:/tmp/etl
             - /tmp/jupyter:/root/.local/share/jupyter/runtime
         ports:
-          - 5001:5000
+            - 5000:5000
             #- 8888:8888
         networks:
             - i2b2-net
