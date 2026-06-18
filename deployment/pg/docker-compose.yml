@@ -1,4 +1,4 @@
-etservices:
+services:
 
   i2b2c-web:
     image: i2b2/i2b2c-web:${I2B2_WEB_TAG} 
@@ -19,6 +19,7 @@ etservices:
         container_name: i2b2-etl
         #restart: unless-stopped
         environment:
+          - PYTHONPATH=/usr/src/app
           - CRC_DB_HOST=${I2B2_DS_CRC_IP}
           - CRC_DB_PORT=${I2B2_DS_CRC_PORT}
           - CRC_DB_USER=${I2B2_DS_CRC_USER}
@@ -91,6 +92,7 @@ etservices:
         container_name: i2b2-jupyter
         #restart: unless-stopped
         environment:
+          - PYTHONPATH=/usr/src/app
           - CRC_DB_HOST=${I2B2_DS_CRC_IP}
           - CRC_DB_PORT=${I2B2_DS_CRC_PORT}
           - CRC_DB_USER=${I2B2_DS_CRC_USER}
@@ -139,6 +141,8 @@ etservices:
         volumes:
             - ./importdata:/usr/src/app/importdata
             - ../../i2b2_cdi:/usr/src/app/i2b2_cdi
+            - ../../Mozilla:/usr/src/app/Mozilla
+            - ../../docs:/usr/src/app/docs
             - ../../tests:/usr/src/app/tests
             - ../../sample_files:/usr/src/app/sample_files
             - /tmp/etl:/tmp/etl
@@ -167,6 +171,7 @@ etservices:
         container_name: i2b2-ml
         #restart: unless-stopped
         environment:
+          - PYTHONPATH=/usr/src/app
           - CRC_DB_HOST=${I2B2_DS_CRC_IP}
           - CRC_DB_PORT=${I2B2_DS_CRC_PORT}
           - CRC_DB_USER=${I2B2_DS_CRC_USER}
@@ -215,12 +220,13 @@ etservices:
         volumes:
             - ./importdata:/usr/src/app/importdata
             - ../../i2b2_cdi:/usr/src/app/i2b2_cdi
+            - ../../Mozilla:/usr/src/app/Mozilla
             - /tmp/etl:/tmp/etl
             #- ../../.venv:/usr/src/app/.venv
         networks:
             - i2b2-net
-        command: bash -c "source /usr/src/app/.venv/bin/activate  && 
-            cd /usr/src/app/ && which python && 
+        command: bash -c "source /usr/src/app/.venv/bin/activate  &&
+            cd /usr/src/app/ && which python &&
             /usr/src/app/.venv/bin/python -m i2b2_cdi.job.jobWatcher "
         depends_on:
             - i2b2-etl          

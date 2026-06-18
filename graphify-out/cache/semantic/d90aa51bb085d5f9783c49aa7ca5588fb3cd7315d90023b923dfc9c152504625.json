@@ -1,0 +1,1 @@
+{"nodes": [{"id": "loader_authenticate_user", "label": "Authenticate User (i2b2 PM)", "file_type": "code", "source_file": "i2b2_cdi/loader/authenticate_user.py", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}

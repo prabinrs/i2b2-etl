@@ -1,0 +1,1 @@
+{"nodes": [{"id": "sql_crc_create_query", "label": "crc_create_query_postgresql.sql", "file_type": "document", "source_file": "i2b2_cdi/project/resources/sql/createDataBase/Crcdata/scripts/crc_create_query_postgresql.sql", "source_location": null, "source_url": null, "captured_at": null, "author": null, "contributor": null}], "edges": [], "hyperedges": []}
