@@ -102,6 +102,16 @@ applyMLConcept = api.model('applyMLConcept', {
     "target_path": fields.String
 })
 
+llmRunRequest = api.model('llmRunRequest', {
+    "jobId": fields.Integer(required=True),
+    "projectName": fields.String,
+    "input": fields.Raw,
+    "conceptCode": fields.String,
+    "conceptPath": fields.String,
+    "node": fields.String,
+    "jobType": fields.String
+})
+
 createPatientSet = api.model('CreatePatientSet', {
     "description": fields.String,
     "path": fields.String,
@@ -523,6 +533,17 @@ class MLConcept_(Resource):
         """Apply ML model"""
         from i2b2_cdi.ML.ml_API import apply_model
         return apply_model(request)    
+
+# LLMrun class for the APIs
+@nsMLConcepts.route("/etl/llm_run", endpoint='llm_run')
+@api.expect(projectNameHeader)
+class LLMRun(Resource):
+    decorators = [auth.login_required(role='DATA_AUTHOR')]
+    @api.doc(description='Run LLM extraction for a job payload', body=llmRunRequest, responses=responseCodes)
+    def post(self):
+        """Run LLM extraction"""
+        from i2b2_cdi.ML.llm_API import run_llm
+        return run_llm(request)
 
 @nsJobStatus.route("/etl/job", endpoint='Jobs')
 @api.expect(projectNameHeader)

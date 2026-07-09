@@ -7,10 +7,6 @@ from datetime import datetime
 
 def get_notes(config, note_concept_path):
     """Fetch clinical notes from observation_fact.observation_blob.
-
-    Queries all facts whose concept_cd belongs to any concept under
-    note_concept_path and returns rows that have non-empty note text.
-
     Returns list of dicts: {patient_num, encounter_num, note_text, start_date}
     """
     crc_ds = I2b2crcDataSource(config)
@@ -41,12 +37,7 @@ def get_notes(config, note_concept_path):
 
 
 def extract_presence(notes, search_terms, vllm_url, model):
-    """Call vLLM chat completions API to detect term presence in each note.
-
-    For each (note, term) pair, sends a yes/no prompt to the vLLM endpoint.
-    Aggregates per patient: a term is marked True if found in ANY note for
-    that patient.
-
+    """use vLLM chat completions API to detect term presence or absence of term(s) in each note.
     Returns: {patient_num: {term: bool, ...}, ...}
     """
     endpoint = vllm_url.rstrip('/') + '/v1/chat/completions'
@@ -98,15 +89,7 @@ def extract_presence(notes, search_terms, vllm_url, model):
 
 
 def ensure_concepts(config, parent_concept_code, search_terms, parent_concept_path):
-    """Insert child concept codes into concept_dimension if they don't already exist.
-
-    For each search term, creates a concept like:
-      concept_cd  = LLM:NLP:FOUND:metformin
-      concept_path = /i2b2/LLM/NLP/Extract/metformin/
-      name_char   = LLM NLP: metformin
-
-    This ensures fact validation passes when loading output facts.
-    """
+    """Insert child concept codes into concept_dimension if they don't already exist."""
     crc_ds = I2b2crcDataSource(config)
     now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     parent_path = parent_concept_path.rstrip('/') + '/'
