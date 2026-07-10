@@ -1,0 +1,3 @@
+mrn, code, start_date,   observation_blob
+99001, ClinicalNotes, 2024-01-01, 'Patient is a 45-year-old male with type 2 diabetes. Currently on metformin 500mg twice daily. Last HbA1c was 7.2%.'
+10,ClinicalNotes,2023-02-23, Patient test positive for the diabetes.

@@ -1,4 +1,7 @@
-# How to Run llmEngine
+# llmEngine
+
+- version : 0.0.1 
+- stage : Draft
 
 `llmEngine` uses a vLLM-backed LLM to detect whether user-specified terms (diagnoses, medications, tests) are mentioned in clinical notes stored in i2b2. It writes a boolean presence fact (`1` = found, `0` = not found) back into `observation_fact` for each patient × term pair.
 
@@ -22,21 +25,53 @@ The engine calls an OpenAI-compatible vLLM HTTP endpoint. No API key is required
 Example endpoint used in testing:
 ```
 https://prabinrs--vllm-gemma4-e2b-serve.modal.run
-```
 
-Verify it is reachable:
-```bash
-curl https://prabinrs--vllm-gemma4-e2b-serve.modal.run/v1/models
 ```
 
 ---
 
 ## Data Setup
 
-### Step 1 — Seed a clinical note into i2b2
+### API based approach 
+1. **create a concept for notes and llm extract** 
+payloads: 
+```{json}
+{
+  "path": "/i2b2/Notes/ClinicalNotes/",
+  "code": "NOTE:CLINICAL",
+  "type": "TEXTUAL"
+}
+
+```
+
+```{json}
+{
+    "path": "/i2b2/LLM/NLP/Extract/",
+    "code": "LLM:NLP:FOUND",
+    "type": "TEXTUAL"
+}
+```
+
+### Seed a clinical note into i2b2 (direct SQL)
 
 The engine reads notes from `observation_fact.observation_blob`. Each note must be linked to a concept path under your `note_concept_path`.
 
+psql within docker into database i2b2 , if not sure about database name use -l will list all the database.  
+```
+docker exec [postgres docker id] -it psql -U postgres -d i2b2 
+```
+
+check schemas 
+```{psql}
+\dn
+```
+
+tables in scheam 
+```
+\dt [schema name].*
+```
+
+after confiming the tables and schema .. can run following command. 
 ```sql
 -- Connect to the i2b2 database
 SET search_path = i2b2demodata;
@@ -103,12 +138,12 @@ VALUES (
 
 | Field | Required | Description |
 |---|---|---|
-| `path` | ✅ | Concept path that identifies the output concept in i2b2 |
-| `note_concept_path` | ✅ | Concept path prefix used to find clinical notes in `observation_fact` |
-| `search_terms` | ✅ | List of terms to search for (diagnoses, medications, tests) |
-| `output_concept_code` | ✅ | Base concept code for output facts (e.g. `LLM:NLP:FOUND`) |
-| `vllm_url` | ✅ | Base URL of the vLLM server (without `/v1`) |
-| `model` | ✅ | Model name as served by vLLM (e.g. `gemma4-e2b`) |
+| `path` | yes | Concept path that identifies the output concept in i2b2 |
+| `note_concept_path` | yes | Concept path prefix used to find clinical notes in `observation_fact` |
+| `search_terms` | yes | List of terms to search for (diagnoses, medications, tests) |
+| `output_concept_code` | yes | Base concept code for output facts (e.g. `LLM:NLP:FOUND`) |
+| `vllm_url` | yes | Base URL of the vLLM server (without `/v1`) |
+| `model` | yes | Model name as served by vLLM (e.g. `gemma4-e2b`) |
 
 > **Note:** `priority` must be set (e.g. `1`). Jobs with `NULL` priority are never picked up by the job watcher.
 

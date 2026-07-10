@@ -1,0 +1,2 @@
+patient_num, sex_cd, age_in_years_num, sourcesystem_cd
+99001, 'M', 45, 'TEST_LLM'

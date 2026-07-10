@@ -1,0 +1,3 @@
+type,path, code
+assertion, /i2b2/Notes/ClinicalNotes/, ClinicalNotes
+assertion, /i2b2/LLM/NLP/Extract/, LLMNLPFound
