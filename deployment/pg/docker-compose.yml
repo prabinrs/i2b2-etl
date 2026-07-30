@@ -1,17 +1,17 @@
 services:
 
-  i2b2c-web:
-    image: i2b2/i2b2c-web:${I2B2_WEB_TAG} 
-    container_name: i2b2c-web
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "444:443"
-    command: /run-httpd.sh localhost
-    depends_on:
-      - i2b2-wildfly
-    networks:
-      - i2b2-net
+  # i2b2c-web:
+  #   image: i2b2/i2b2c-web:${I2B2_WEB_TAG} 
+  #   container_name: i2b2c-web
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "444:443"
+  #   command: /run-httpd.sh localhost
+  #   depends_on:
+  #     - i2b2-wildfly
+  #   networks:
+  #     - i2b2-net
 
   i2b2-etl:
         image: i2b2/i2b2-etl:${I2B2_ETL_TAG}
@@ -83,8 +83,8 @@ services:
             && python -m i2b2_cdi.loader.i2b2_cdi_app"
 
     
-        depends_on:
-            - i2b2c-web
+        #depends_on:
+            #- i2b2c-web
 
   i2b2-jupyter:
         image: i2b2/i2b2-etl:${I2B2_ETL_TAG}
@@ -162,8 +162,8 @@ services:
           "
 
 
-        depends_on:
-            - i2b2c-web
+        # depends_on:
+         #   - i2b2c-web
 
   i2b2-ml:
         image: i2b2/i2b2-etl:${I2B2_ETL_TAG}
@@ -299,6 +299,37 @@ services:
     ports:
       - "5432:5432"
   
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    entrypoint: >
+      /bin/sh -c "ollama serve & sleep 5 && ollama run qwen3:0.6b && wait"
+    networks:
+      - i2b2-net
+
+  # vllm-gemma4:
+  #   image: vllm/vllm-openai:latest
+  #   container_name: vllm
+  #   restart: unless-stopped
+  #   networks:
+  #     - i2b2-net
+  #   ports:
+  #     - "8000:8000"
+  #   environment:
+  #     - HF_TOKEN=${HF_TOKEN}
+  #     - VLLM_TARGET_DEVICE=cpu
+  #     - OMP_NUM_THREADS=4
+  #   volumes:
+  #     - ~/.cache/huggingface:/root/.cache/huggingface
+  #   command: >
+  #     --model Qwen/Qwen3-0.6B
+  #     --api-key ${MY_CUSTOM_SECRET_KEY}
+  #     --max-model-len 4096
+  
+  # google/gemma-4-E2B-it
 
   # gitlab:
   #   image: gitlab/gitlab-ce:14.10.5-ce.0 
