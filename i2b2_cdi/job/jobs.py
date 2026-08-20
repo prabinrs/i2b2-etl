@@ -41,15 +41,31 @@ def processRequestJob(request):
     except Exception as err:
         return _exception_response(err)    
     
+def concept_path_exists(crc_ds, concept_path):
+    try:
+        placeholder = '?' if os.environ.get('CRC_DB_TYPE') == 'mssql' else '%s'
+        with crc_ds as cursor:
+            cursor.execute("SELECT 1 FROM concept_dimension WHERE concept_path = " + placeholder, (concept_path,))
+            return cursor.fetchone() is not None
+    except Exception as e:
+        logger.warning('Could not check concept_path {}: {}', concept_path, e)
+        return False
+
+
 def addJob(requestBody,  crc_db_name, crc_ds):
 
     input = requestBody['input']
-    # handling the case for perform ml with jobs and ML with patient_set 
+    # handling the case for perform ml with jobs and ML with patient_set
     job_type = requestBody['jobType']
-    path = formatPath(input['path'])
+    raw_path = input['path']
+    path = formatPath(raw_path)
 
     input['path'] = humanPathToCodedPath(crc_db_name, path)
-    
+    if input['path'] is None and concept_path_exists(crc_ds, raw_path):
+        # path is already a coded path present in concept_dimension
+        # (e.g. llm concepts seeded with literal forward-slash paths)
+        input['path'] = raw_path
+
     if job_type.lower() == "ml-apply" :
         target_path = formatPath(input['target_path'])
         input['target_path'] = humanPathToCodedPath(crc_db_name, target_path)
@@ -152,7 +168,10 @@ def getJob(request,  crc_ds):
         sql = sql + "order by id desc"
         with crc_ds as cursor:
 
-            cursor.execute(sql,( job_id,))
+            if job_id is not None:
+                cursor.execute(sql, (job_id,))
+            else:
+                cursor.execute(sql)
             result = cursor.fetchall()
             col_names= [desc[0] for desc in cursor.description]
             formatted_result = []
