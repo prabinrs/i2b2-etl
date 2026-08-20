@@ -62,17 +62,18 @@ def extract_presence(notes, search_terms, vllm_url, model):
                     json={
                         'model': model,
                         'messages': [{'role': 'user', 'content': prompt}],
-                        'max_tokens': 10,
+                        # reasoning models (e.g. qwen3) spend tokens thinking
+                        # before the final answer, so a small cap returns ''
+                        'max_tokens': 512,
                         'temperature': 0,
                     },
-                    timeout=30,
+                    timeout=120,
                 )
                 response.raise_for_status()
-                answer = (
-                    response.json()['choices'][0]['message']['content']
-                    .strip()
-                    .lower()
-                )
+                content = response.json()['choices'][0]['message']['content']
+                if '</think>' in content:
+                    content = content.split('</think>')[-1]
+                answer = content.strip().lower()
                 if answer.startswith('yes'):
                     results[patient_num][term] = True
             except Exception as e:

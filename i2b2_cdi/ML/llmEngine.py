@@ -27,7 +27,7 @@ class llmEngine(BaseEngine):
         if not notes:
             logger.warning('No clinical notes found for path: {}', note_concept_path)
             self.output = {}
-            return
+            return self.output
 
         results = extract_presence(notes, search_terms, vllm_url, model)
 
@@ -49,3 +49,4 @@ class llmEngine(BaseEngine):
             self.send_facts(df)
 
         self.output = results
+        return self.output

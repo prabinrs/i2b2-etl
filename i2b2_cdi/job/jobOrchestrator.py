@@ -68,13 +68,14 @@ class jobOrchestrator:
         self.crc_ds.database = project_name
         with self.crc_ds as cursor:
           #cursor.execute(delete_sql, (str(concept_cd),))  
-          if(os.environ['CRC_DB_TYPE']=='pg'): 
-            delete_sql = "DELETE FROM "+os.environ['CRC_DB_NAME']+".observation_fact WHERE concept_cd = {concept_cd} ".format(concept_cd="'"+concept_cd+"'")
+          # also delete child-code facts (e.g. LLM:NLP:FOUND:metformin) written under the parent concept
+          if(os.environ['CRC_DB_TYPE']=='pg'):
+            delete_sql = "DELETE FROM "+os.environ['CRC_DB_NAME']+".observation_fact WHERE concept_cd = %s OR concept_cd LIKE %s"
             self.crc_ds.connection.autocommit=True
-            cursor.execute(delete_sql)
-          if(os.environ['CRC_DB_TYPE']=='mssql'): 
-            delete_sql = "DELETE FROM observation_fact WHERE concept_cd = ?"
-            cursor.execute(delete_sql, (str(concept_cd),))
+            cursor.execute(delete_sql, (str(concept_cd), str(concept_cd)+':%'))
+          if(os.environ['CRC_DB_TYPE']=='mssql'):
+            delete_sql = "DELETE FROM observation_fact WHERE concept_cd = ? OR concept_cd LIKE ?"
+            cursor.execute(delete_sql, (str(concept_cd), str(concept_cd)+':%'))
             cursor.commit()
     except Exception as e:
         logger.error(e)
